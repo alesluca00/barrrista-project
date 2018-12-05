@@ -1,29 +1,42 @@
 /* P ROGETTO DEL PROFESSOR BIAGIO ROSARIO GRECO 
  * GRUPPO: BIASI FRANCESCO, ALESSANDRINI LUCA ,TESSERIN DAVID
- * TIPOLOGIA DI SOCKET: DATAGRAM SOCKET
+ * TIPOLOGIA DI SOCKET: STREAM SOCKET
  * 
  */
 package Serra.it;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
 public class ClientSerra {
-	
 	public ClientSerra(String HOST, int PORT, String MSG) throws Exception {
-		DatagramSocket s = new DatagramSocket();
-		s.send(new DatagramPacket(MSG.getBytes(), MSG.length(), InetAddress.getByName(HOST), PORT));
-		System.out.println(HOST + ":" + PORT + " send >> " + MSG);
+		Socket s = new Socket(HOST, PORT); // Host e Porta del Server
+		PrintWriter w = new PrintWriter(s.getOutputStream(), true);
+		BufferedReader r = new BufferedReader(new InputStreamReader(s.getInputStream()));
 
+		w.println(MSG); // scrivo sullo stream il messaggio
+		System.out.println("[sendTo] " + HOST + ":" + PORT + " >> " + MSG + "..");
+
+		// leggo il messaggio di risposta del server
+		System.out.println("[recive] " + HOST + ":" + PORT + " << " + r.readLine() + "..");
+
+		w.close();
+		r.close();
 		s.close();
+
 	}
-	
+
+
 
 	public static void main(String[] args) throws Exception {
-		Vector v=new Vector(7); //dichiarazione vettore utile per memorizzare la seconda parte del messaggio 
+		Vector v=new Vector(7); //dichiarazione vettore utile per 12memorizzare la seconda parte del messaggio 
 		final String HOST = (args.length > 0) ? args[0] : "localhost";
 		final int PORT = (args.length > 1) ? Integer.parseInt(args[1]) : 12345;
 		Scanner Scan=new Scanner(System.in); 
@@ -39,6 +52,7 @@ public class ClientSerra {
 		StringTokenizer st=new StringTokenizer(s);
 		String i="";
 		
+		
 		for(int j=0;j<8;j++)  //creazione di un vettore vuoto per impostare la seconda parte del messaggio a tutti 0
 		{
 			v.addElement(0);
@@ -46,7 +60,7 @@ public class ClientSerra {
 		}
 		
 		while(st.hasMoreTokens())  //prelevo ogni numero inserio dall utente e imposto la cella del vettore corrispondente a 1 cioè accendendola
-		{
+		{	
 			i=st.nextToken();
 			int a=Integer.valueOf(i);
 			v.add((a-1), 1);
@@ -55,12 +69,12 @@ public class ClientSerra {
 		
 		for(int j=0;j<8;j++)
 		{
-			temp=temp+String.valueOf(v.elementAt(j)); //memorizzo ogni singolo valore del vettore su una stringa cosi da ottenere 8 bit
-			MSG=illuminazione+temp; //concateno con l illuminazione cosi da formare un messaggio da 16 bit
+		 	temp=temp+String.valueOf(v.elementAt(j)); //memorizzo ogni singolo valore del vettore su una stringa cosi da ottenere 8 bit
+			MSG=temp+illuminazione; //concateno con l illuminazione cosi da formare un messaggio da 16 bit
 			System.out.println("POSIZIONE "+(j+1)+":"+v.elementAt(j));//stampa di verifica
 			
 		}
-		MSG.getBytes();
+		
 		//System.out.println(MSG);
 		new ClientSerra(HOST, PORT, MSG);	
 	}
